@@ -172,7 +172,6 @@ public class GameController {
         Random random = new Random();
         Question question = questions[random.nextInt(questions.length)];
         QuestionType type = QuestionType.values()[random.nextInt(QuestionType.values().length)];
-
         session.setAttribute("currentQuestion", question);
         session.setAttribute("currentQuestionType", type);
 
@@ -185,7 +184,6 @@ public class GameController {
                 type,
                 shuffledOptions.toArray(new String[0])
         );
-
         return ResponseEntity.ok(response);
     }
 
@@ -196,7 +194,6 @@ public class GameController {
             case ARTIST_SONG -> "Che canzone canta '" + question.getArtist() + "'?";
             case ARTIST_COUNTRY -> "Per quale nazione gareggia '" + question.getArtist() + "'?";
             case COUNTRY_ARTIST -> "Chi gareggia per la nazione '" + question.getCorrectCountry() + "'?";
-            default -> "Invalid question type";
         };
     }
 
@@ -205,7 +202,6 @@ public class GameController {
         System.out.println("JSON: " + answer.getSelectedOption() + " " + answer.getQuestionId() + " " + answer.getType());
 
         if (answer.getType() == null) {
-            // Respond with an error if the type is not provided
             return ResponseEntity.badRequest().body("Missing question type in the request.");
         }
 
@@ -218,8 +214,11 @@ public class GameController {
 
         String correctAnswer = currentQuestion.getCorrectAnswer(answer.getType());
         boolean isCorrect = correctAnswer != null && correctAnswer.equals(answer.getSelectedOption());
+        System.out.println("risposta corretta: " + correctAnswer);
         System.out.println("isCorrect: " + isCorrect);
-        return ResponseEntity.ok(new AnswerResult(isCorrect));
+
+        AnswerResult result = new AnswerResult(isCorrect, correctAnswer);
+        return ResponseEntity.ok(result);
     }
 
     private Question findQuestionById(int questionId) {
@@ -230,7 +229,6 @@ public class GameController {
         }
         return null;
     }
-
 }
 
 
