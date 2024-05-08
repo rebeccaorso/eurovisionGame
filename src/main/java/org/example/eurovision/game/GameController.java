@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @RestController
 public class GameController {
@@ -170,8 +171,15 @@ public class GameController {
     @GetMapping("/question")
     public ResponseEntity<QuestionResponse> getRandomQuestion(HttpSession session) {
         Random random = new Random();
-        Question question = questions[random.nextInt(questions.length)];
-        QuestionType type = QuestionType.values()[random.nextInt(QuestionType.values().length)];
+        String category = (String) session.getAttribute("category");
+        List<Question> filteredQuestions = filterQuestionsByCategory(category);
+
+        if (filteredQuestions.isEmpty()) {
+            return ResponseEntity.badRequest().body(new QuestionResponse(0, "Nessuna domanda disponibile per questa categoria.", null, new String[0]));
+        }
+
+        Question question = filteredQuestions.get(random.nextInt(filteredQuestions.size()));
+        QuestionType type = QuestionType.valueOf(category != null ? category : QuestionType.values()[random.nextInt(QuestionType.values().length)].name());
         session.setAttribute("currentQuestion", question);
         session.setAttribute("currentQuestionType", type);
 
@@ -221,6 +229,15 @@ public class GameController {
         return ResponseEntity.ok(result);
     }
 
+    private List<Question> filterQuestionsByCategory(String category) {
+        if (category == null || category.isEmpty()) {
+            return Arrays.asList(questions); // ritorna tutte le domande se non è stata selezionata alcuna categoria
+        }
+        return Arrays.stream(questions)
+                .filter(q -> q.getType().name().equals(category))
+                .collect(Collectors.toList());
+    }
+
     private Question findQuestionById(int questionId) {
         for (Question question : questions) {
             if (question.getId() == questionId) {
@@ -229,6 +246,13 @@ public class GameController {
         }
         return null;
     }
+
+    @PostMapping("/setCategory")
+    public ResponseEntity<?> setCategory(HttpSession session, @RequestBody String category) {
+        session.setAttribute("category", category);
+        return ResponseEntity.ok("Categoria impostata su: " + category);
+    }
+
 }
 
 

@@ -9,6 +9,8 @@ public class Question {
     private String[] songOptions;
     private String[] artistOptions;
 
+    private QuestionType type;
+
     public Question(int id, String song, String artist, String correctCountry, String[] countryOptions, String[] songOptions, String[] artistOptions) {
         this.id = id;
         this.song = song;
@@ -25,7 +27,6 @@ public class Question {
             case ARTIST_SONG -> songOptions;
             case ARTIST_COUNTRY -> countryOptions;
             case COUNTRY_ARTIST -> artistOptions;
-            default -> throw new IllegalArgumentException("Unsupported question type");
         };
     }
     public int getId() {
@@ -76,6 +77,14 @@ public class Question {
         this.songOptions = songOptions;
     }
 
+    public QuestionType getType() {
+        return type;
+    }
+
+    public void setType(QuestionType type) {
+        this.type = type;
+    }
+
     public String[] getArtistOptions() {
         return artistOptions;
     }
@@ -85,20 +94,14 @@ public class Question {
     }
 
     public String getCorrectAnswer(QuestionType type) {
-        switch (type) {
-            case SONG_ARTIST:
-                return artist;
-            case SONG_COUNTRY:
-                return correctCountry;
-            case ARTIST_SONG:
-                return song;
-            case ARTIST_COUNTRY:
-                return correctCountry;
-            case COUNTRY_ARTIST:
-                return artist;
-            default:
-                return null;
-        }
+        return switch (type) {
+            case SONG_ARTIST -> artist;
+            case SONG_COUNTRY -> correctCountry;
+            case ARTIST_SONG -> song;
+            case ARTIST_COUNTRY -> correctCountry;
+            case COUNTRY_ARTIST -> artist;
+            default -> null;
+        };
 
     }
 }
