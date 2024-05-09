@@ -58,7 +58,7 @@ public class GameController {
                     new String[]{"Slovenia", "Finlandia", "Moldavia"},
                     new String[]{"Veronika", "No Rules!", "In The Middle"},
                     new String[]{"Raiven", "Windows95Man", "Natalia Barbu"}),
-            new Question(9, "No Rules!", "Windows95Man", "Finlandia",
+            new Question(37, "No Rules!", "Windows95Man", "Finlandia",
                     new String[]{"Finlandia", "Moldavia", "Azerbaigian"},
                     new String[]{"No Rules!", "In The Middle", "Özünlə Apar"},
                     new String[]{"Windows95Man", "Natalia Barbu", "Fahree feat. Ilkin Dovlatov"}),
@@ -196,6 +196,7 @@ public class GameController {
                 type,
                 shuffledOptions.toArray(new String[0])
         );
+
         return ResponseEntity.ok(response);
     }
 
@@ -253,10 +254,17 @@ public class GameController {
     @PostMapping("/setCategory")
     public ResponseEntity<?> setCategory(HttpSession session, @RequestBody String category) {
         session.setAttribute("category", category);
-        session.setAttribute("score", 0);  // Reset the score
-        session.setAttribute("questionCount", 0);  // Reset the question count
+        session.setAttribute("score", 0);
+        session.setAttribute("questionCount", 0);
         return ResponseEntity.ok("Categoria impostata su: " + category);
     }
+
+    @PostMapping("/setQuizLength")
+    public ResponseEntity<?> setQuizLength(HttpSession session, @RequestBody int length) {
+        session.setAttribute("quizLength", length);
+        return ResponseEntity.ok("Quiz length set to: " + length);
+    }
+
 
 }
 
