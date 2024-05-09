@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .exposedHeaders("Authorization")
                 .allowCredentials(true)
-                .allowedOriginPatterns("*"); // Utilizza allowedOriginPatterns invece di allowedOrigins
+                .allowedOriginPatterns("*");
     }
 
 

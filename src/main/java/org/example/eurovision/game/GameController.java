@@ -15,8 +15,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 public class GameController {
+    private static final Logger logger = LoggerFactory.getLogger(GameController.class);
     private static final Question[] questions = {
             new Question(1, "Liar", "Silia Kapsis", "Cipro",
                     new String[]{"Cipro", "Serbia", "Lituania"},
@@ -195,6 +199,7 @@ public class GameController {
         return ResponseEntity.ok(response);
     }
 
+
     private String generateQuestionText(Question question, QuestionType type) {
         return switch (type) {
             case SONG_ARTIST -> "Chi canta la canzone '" + question.getSong() + "'?";
@@ -206,32 +211,30 @@ public class GameController {
     }
 
     @PostMapping("/answer")
-    public ResponseEntity<?> submitAnswer(@RequestBody Answer answer) {
-        System.out.println("JSON: " + answer.getSelectedOption() + " " + answer.getQuestionId() + " " + answer.getType());
-
+    public ResponseEntity<?> submitAnswer(HttpSession session, @RequestBody Answer answer) {
         if (answer.getType() == null) {
             return ResponseEntity.badRequest().body("Missing question type in the request.");
         }
+        logger.info("Submitting answer - Session ID: {}", session.getId());
 
         Question currentQuestion = findQuestionById(answer.getQuestionId());
-        System.out.println("Current Question: " + (currentQuestion == null ? "null" : currentQuestion.getId()));
-
         if (currentQuestion == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Non trovo la domanda");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Question not found");
         }
 
         String correctAnswer = currentQuestion.getCorrectAnswer(answer.getType());
         boolean isCorrect = correctAnswer != null && correctAnswer.equals(answer.getSelectedOption());
-        System.out.println("risposta corretta: " + correctAnswer);
-        System.out.println("isCorrect: " + isCorrect);
+
+        logger.info("Answer submitted - Session ID: {}, Question ID: {}, Correct: {}", session.getId(), answer.getQuestionId(), isCorrect);
 
         AnswerResult result = new AnswerResult(isCorrect, correctAnswer);
         return ResponseEntity.ok(result);
     }
 
+
     private List<Question> filterQuestionsByCategory(String category) {
         if (category == null || category.isEmpty()) {
-            return Arrays.asList(questions); // ritorna tutte le domande se non è stata selezionata alcuna categoria
+            return Arrays.asList(questions);
         }
         return Arrays.stream(questions)
                 .filter(q -> q.getType().name().equals(category))
@@ -250,16 +253,11 @@ public class GameController {
     @PostMapping("/setCategory")
     public ResponseEntity<?> setCategory(HttpSession session, @RequestBody String category) {
         session.setAttribute("category", category);
+        session.setAttribute("score", 0);  // Reset the score
+        session.setAttribute("questionCount", 0);  // Reset the question count
         return ResponseEntity.ok("Categoria impostata su: " + category);
     }
 
 }
-
-
-
-
-
-
-
 
 
